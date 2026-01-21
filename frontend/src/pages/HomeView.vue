@@ -63,7 +63,7 @@ import { RouterLink } from 'vue-router'
           <div>
             <h2 class="text-lg font-semibold text-gray-900">Quick Start</h2>
             <p class="text-gray-600 mt-1">
-              Run <code class="bg-gray-100 px-2 py-1 rounded">make dev</code> to start everything.
+              Run <code class="bg-gray-100 px-2 py-1 rounded">docker compose up</code> to start everything.
             </p>
           </div>
         </div>

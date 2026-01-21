@@ -1,7 +1,4 @@
-version: "3.8"
-
 services:
-  # Backend API
   backend:
     build:
       context: ./backend
@@ -15,13 +12,7 @@ services:
     environment:
       - DATABASE_URL=sqlite+aiosqlite:///./capstack.db
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
 
-  # Frontend (development)
   frontend:
     build:
       context: ./frontend
@@ -36,23 +27,3 @@ services:
       - backend
     environment:
       - VITE_API_URL=http://backend:8000
-
-  # PostgreSQL (optional - uncomment for production-like setup)
-  # postgres:
-  #   image: postgres:16-alpine
-  #   ports:
-  #     - "5432:5432"
-  #   environment:
-  #     POSTGRES_USER: capstack
-  #     POSTGRES_PASSWORD: capstack
-  #     POSTGRES_DB: capstack
-  #   volumes:
-  #     - postgres_data:/var/lib/postgresql/data
-  #   healthcheck:
-  #     test: ["CMD-SHELL", "pg_isready -U capstack"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-
-# volumes:
-#   postgres_data:

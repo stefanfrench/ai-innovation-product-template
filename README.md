@@ -71,7 +71,6 @@ capstack/
 │
 ├── .github/workflows/      # CI/CD pipelines
 ├── docker-compose.yml      # One-command development
-├── Makefile               # Common commands
 └── .env.example           # Environment template
 ```
 
@@ -172,16 +171,27 @@ class YourModel(Base):
 
 ---
 
-## 📋 Make Commands
+## 📋 Common Commands
 
 ```bash
-make help          # Show all commands
-make dev           # Start everything (Docker)
-make backend       # Start backend only
-make frontend      # Start frontend only
-make test          # Run tests
-make lint          # Lint code
-make clean         # Remove generated files
+# Start everything (Docker - recommended)
+docker compose up
+
+# Rebuild after dependency changes
+docker compose up --build
+
+# Stop services
+docker compose down
+
+# View logs
+docker compose logs -f
+
+# Run backend tests
+cd backend && pytest -v
+
+# Lint code
+cd backend && ruff check .
+cd frontend && npm run lint
 ```
 
 ---
@@ -259,7 +269,7 @@ See `.env.example` for all options.
 
 1. Create a feature branch
 2. Make your changes
-3. Run `make lint` and `make test`
+3. Run linting (`cd backend && ruff check .`) and tests (`cd backend && pytest`)
 4. Open a PR to `main`
 
 ---
