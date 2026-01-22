@@ -5,7 +5,18 @@ API tests using pytest and httpx.
 import pytest
 from httpx import ASGITransport, AsyncClient
 
+from app.core.database import Base, engine
 from app.main import app
+
+
+@pytest.fixture(autouse=True)
+async def setup_database():
+    """Create tables before each test and clean up after."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    yield
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest.fixture
