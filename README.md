@@ -31,9 +31,8 @@ That's it! Open:
 ```bash
 # Backend (Python 3.11+)
 cd backend
-pip install uv
-uv pip install --system -e ".[dev]"
-uvicorn app.main:app --reload
+pip install -e ".[dev]"
+python -m uvicorn app.main:app --reload
 
 # Frontend (Node.js 20+)
 cd frontend
