@@ -68,7 +68,7 @@ async def llm_complete(
 
     Args:
         prompt: User message/prompt
-        model: Override the default model (e.g., "gpt-4o", "azure/gpt-4", "ollama/llama2")
+        model: Override the default model (e.g., "gpt-4o", "ollama/llama2")
         system_prompt: Optional system message
         temperature: Creativity (0-2)
         max_tokens: Maximum response length
