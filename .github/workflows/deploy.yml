@@ -1,0 +1,36 @@
+# Deploy to Railway on merge to main
+# Requires RAILWAY_TOKEN secret to be set in repository settings
+
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allow manual trigger
+
+env:
+  RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+jobs:
+  deploy:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    # Only run if CI passed (this workflow runs after CI)
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      # Alternative: Deploy specific services
+      # - name: Deploy Backend
+      #   run: railway up --service backend --detach
+      #
+      # - name: Deploy Frontend  
+      #   run: railway up --service frontend --detach

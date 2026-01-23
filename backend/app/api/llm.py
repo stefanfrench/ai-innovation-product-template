@@ -1,0 +1,108 @@
+"""
+LLM API endpoints.
+Provides both REST and WebSocket access to LLM capabilities.
+"""
+
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from pydantic import BaseModel
+
+from app.core.llm import llm_complete, llm_stream
+
+router = APIRouter(prefix="/llm", tags=["llm"])
+
+
+class CompletionRequest(BaseModel):
+    """Request body for LLM completion."""
+
+    prompt: str
+    model: str | None = None
+    system_prompt: str | None = None
+    temperature: float = 0.7
+    max_tokens: int = 1000
+
+
+class CompletionResponse(BaseModel):
+    """Response from LLM completion."""
+
+    content: str
+    model: str
+
+
+@router.post("/complete", response_model=CompletionResponse)
+async def complete(request: CompletionRequest) -> CompletionResponse:
+    """
+    Get a completion from the LLM.
+
+    Example:
+    ```
+    POST /api/llm/complete
+    {
+        "prompt": "Explain quantum computing in simple terms",
+        "temperature": 0.7
+    }
+    ```
+    """
+    from app.core.config import get_settings
+
+    settings = get_settings()
+
+    content = await llm_complete(
+        prompt=request.prompt,
+        model=request.model,
+        system_prompt=request.system_prompt,
+        temperature=request.temperature,
+        max_tokens=request.max_tokens,
+    )
+
+    return CompletionResponse(
+        content=content,
+        model=request.model or settings.litellm_model,
+    )
+
+
+@router.websocket("/stream")
+async def stream_completion(websocket: WebSocket) -> None:
+    """
+    WebSocket endpoint for streaming LLM responses.
+
+    Connect and send JSON messages:
+    ```json
+    {
+        "prompt": "Tell me a story about a robot",
+        "system_prompt": "You are a creative storyteller",
+        "temperature": 0.8
+    }
+    ```
+
+    Receives streamed text chunks, then a final {"done": true} message.
+    """
+    await websocket.accept()
+
+    try:
+        while True:
+            # Receive request
+            data = await websocket.receive_json()
+
+            prompt = data.get("prompt", "")
+            if not prompt:
+                await websocket.send_json({"error": "prompt is required"})
+                continue
+
+            # Stream response
+            try:
+                async for chunk in llm_stream(
+                    prompt=prompt,
+                    model=data.get("model"),
+                    system_prompt=data.get("system_prompt"),
+                    temperature=data.get("temperature", 0.7),
+                    max_tokens=data.get("max_tokens", 1000),
+                ):
+                    await websocket.send_json({"chunk": chunk})
+
+                await websocket.send_json({"done": True})
+
+            except Exception as e:
+                await websocket.send_json({"error": str(e)})
+
+    except WebSocketDisconnect:
+        pass
