@@ -1,8 +1,8 @@
-# 🚀 CapStack
+# 🚀 AI Product Innovation Template
 
-**AI Product Innovation Template** - A full-stack starter for building AI-powered applications.
+A full-stack starter for building AI-powered applications.
 
-> Built by the AI Product Innovation team at Capgemini
+> Built by the AI Product Innovation team at Capgemini Invent
 
 ---
 
