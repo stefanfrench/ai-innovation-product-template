@@ -215,13 +215,14 @@ cd frontend && npm test
 
 ### Railway
 
-1. Create a project on [Railway](https://railway.app)
-2. Connect your GitHub repo
-3. Add environment variables from `.env.example`
-4. Add `RAILWAY_TOKEN` to your GitHub repo secrets
-5. Push to `main` -- auto-deploys via `.github/workflows/deploy.yml`
-
-The `railway.json` at the project root defines both services (backend + frontend).
+1. Create a project on [Railway](https://railway.app) and connect your GitHub repo
+2. Railway will detect `railway.json` and create both services (backend + frontend)
+3. Set environment variables on the **backend** service (from `.env.example`):
+   - `DATABASE_URL`, `LITELLM_MODEL`, your LLM API key, etc.
+4. Set one variable on the **frontend** service:
+   - `BACKEND_URL` = `http://backend.railway.internal:${{backend.PORT}}`
+   - (Use Railway's reference variable syntax to point to the backend's internal URL)
+5. Optionally add `RAILWAY_TOKEN` to GitHub secrets for auto-deploy on push to `main`
 
 ### Azure Container Apps
 
