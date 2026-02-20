@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     # For local models (Ollama)
     ollama_base_url: str = "http://localhost:11434"
 
+    # Auth (optional - set API_KEY to enable simple key-based auth on /api/* routes)
+    api_key: str | None = None
+
     # CORS
     cors_origins: list[str] = ["http://localhost:5173", "http://localhost:3000"]
 

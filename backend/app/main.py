@@ -6,10 +6,11 @@ FastAPI application entry point.
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import health, items, llm
+from app.core.auth import verify_api_key
 from app.core.config import get_settings
 from app.core.database import init_db
 
@@ -45,8 +46,8 @@ app.add_middleware(
 
 # Include routers
 app.include_router(health.router)
-app.include_router(items.router, prefix="/api")
-app.include_router(llm.router, prefix="/api")
+app.include_router(items.router, prefix="/api", dependencies=[Depends(verify_api_key)])
+app.include_router(llm.router, prefix="/api", dependencies=[Depends(verify_api_key)])
 
 
 @app.get("/")

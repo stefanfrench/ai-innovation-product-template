@@ -1,0 +1,98 @@
+# Deploy to Azure Container Apps
+# Triggered manually -- set up the required secrets first.
+#
+# Required GitHub secrets:
+#   AZURE_CREDENTIALS    - Service principal JSON (az ad sp create-for-rbac --sdk-auth)
+#   ACR_LOGIN_SERVER     - e.g. yourregistry.azurecr.io
+#   ACR_USERNAME         - ACR admin username
+#   ACR_PASSWORD         - ACR admin password
+#   AZURE_RESOURCE_GROUP - Resource group for Container Apps
+#   AZURE_LOCATION       - Azure region (e.g. uksouth)
+#
+# Required Azure resources (create these before first deploy):
+#   - Azure Container Registry (ACR)
+#   - Azure Container Apps Environment
+#
+# Quick setup:
+#   az group create -n myapp-rg -l uksouth
+#   az acr create -n myappacr -g myapp-rg --sku Basic --admin-enabled
+#   az containerapp env create -n myapp-env -g myapp-rg -l uksouth
+
+name: Deploy to Azure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "staging"
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  BACKEND_IMAGE: ${{ secrets.ACR_LOGIN_SERVER }}/capstack-backend
+  FRONTEND_IMAGE: ${{ secrets.ACR_LOGIN_SERVER }}/capstack-frontend
+
+jobs:
+  build-and-push:
+    name: Build & Push Images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Log in to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push backend
+        run: |
+          docker build -t ${{ env.BACKEND_IMAGE }}:${{ github.sha }} ./backend
+          docker push ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+
+      - name: Build & push frontend
+        run: |
+          docker build -t ${{ env.FRONTEND_IMAGE }}:${{ github.sha }} --target prod ./frontend
+          docker push ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+
+  deploy:
+    name: Deploy to Container Apps
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy backend
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppName: capstack-backend
+          containerAppEnvironment: capstack-env
+          imageToDeploy: ${{ env.BACKEND_IMAGE }}:${{ github.sha }}
+          targetPort: 8000
+          location: ${{ secrets.AZURE_LOCATION }}
+          ingress: external
+
+      - name: Deploy frontend
+        uses: azure/container-apps-deploy-action@v1
+        with:
+          resourceGroup: ${{ secrets.AZURE_RESOURCE_GROUP }}
+          containerAppName: capstack-frontend
+          containerAppEnvironment: capstack-env
+          imageToDeploy: ${{ env.FRONTEND_IMAGE }}:${{ github.sha }}
+          targetPort: 80
+          location: ${{ secrets.AZURE_LOCATION }}
+          ingress: external

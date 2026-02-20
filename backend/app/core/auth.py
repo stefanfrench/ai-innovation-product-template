@@ -1,0 +1,26 @@
+"""
+Simple API key authentication middleware.
+
+Off by default. Set the API_KEY environment variable to enable.
+When enabled, all /api/* requests must include an X-API-Key header.
+"""
+
+from fastapi import Request, HTTPException, Security
+from fastapi.security import APIKeyHeader
+
+from app.core.config import get_settings
+
+api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+async def verify_api_key(api_key: str | None = Security(api_key_header)) -> str | None:
+    """Dependency that checks the API key if one is configured."""
+    settings = get_settings()
+
+    if not settings.api_key:
+        return None
+
+    if not api_key or api_key != settings.api_key:
+        raise HTTPException(status_code=401, detail="Invalid or missing API key")
+
+    return api_key

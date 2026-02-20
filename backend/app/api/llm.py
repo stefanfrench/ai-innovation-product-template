@@ -3,10 +3,30 @@ LLM API endpoints.
 Provides both REST and WebSocket access to LLM capabilities.
 """
 
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, HTTPException, WebSocket, WebSocketDisconnect
 from pydantic import BaseModel
 
 from app.core.llm import llm_complete, llm_stream
+
+
+def _check_llm_configured(settings) -> None:
+    """Raise a clear error if no LLM provider API key is set."""
+    model = settings.litellm_model
+    has_key = (
+        settings.openai_api_key
+        or settings.azure_api_key
+        or settings.anthropic_api_key
+        or model.startswith("ollama/")
+    )
+    if not has_key:
+        raise HTTPException(
+            status_code=503,
+            detail=(
+                "No LLM provider configured. "
+                "Set OPENAI_API_KEY, AZURE_API_KEY, or ANTHROPIC_API_KEY in your .env file. "
+                "For local models, use LITELLM_MODEL=ollama/model-name."
+            ),
+        )
 
 router = APIRouter(prefix="/llm", tags=["llm"])
 
@@ -45,6 +65,7 @@ async def complete(request: CompletionRequest) -> CompletionResponse:
     from app.core.config import get_settings
 
     settings = get_settings()
+    _check_llm_configured(settings)
 
     content = await llm_complete(
         prompt=request.prompt,
@@ -78,9 +99,11 @@ async def stream_completion(websocket: WebSocket) -> None:
     """
     await websocket.accept()
 
+    from app.core.config import get_settings
+    settings = get_settings()
+
     try:
         while True:
-            # Receive request
             data = await websocket.receive_json()
 
             prompt = data.get("prompt", "")
@@ -88,7 +111,12 @@ async def stream_completion(websocket: WebSocket) -> None:
                 await websocket.send_json({"error": "prompt is required"})
                 continue
 
-            # Stream response
+            try:
+                _check_llm_configured(settings)
+            except HTTPException as e:
+                await websocket.send_json({"error": e.detail})
+                continue
+
             try:
                 async for chunk in llm_stream(
                     prompt=prompt,

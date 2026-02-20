@@ -1,37 +1,46 @@
-# 🚀 AI Product Innovation Template
+# AI Product Innovation Template
 
-A full-stack starter for building AI-powered applications.
+A full-stack starter for building AI-powered PoCs, fast.
 
 > Built by the AI Product Innovation team at Capgemini Invent
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
-### Option 1: Docker (Recommended)
+### 1. Create your project
+
+Use this repo as a GitHub template, then rename it:
 
 ```bash
-# Clone and enter the project
-git clone https://github.com/stefanfrench/capstack.git
-cd capstack
+git clone https://github.com/your-org/your-project.git
+cd your-project
+./scripts/init.sh your-project-name
+```
 
-# Copy environment file and add your API keys
+### 2. Configure
+
+```bash
 cp .env.example .env
+# Edit .env -- add your LLM API key (OpenAI, Azure OpenAI, or Anthropic)
+```
 
-# Start everything
+### 3. Run
+
+```bash
 docker compose up
 ```
 
-That's it! Open:
-- 🖥️ **Frontend**: http://localhost:5173
-- 🔌 **API Docs**: http://localhost:8000/docs
+That's it. Open:
+- **Frontend**: http://localhost:5173
+- **API Docs**: http://localhost:8000/docs
 
-### Option 2: Local Development
+### Running without Docker
 
 ```bash
 # Backend (Python 3.11+)
 cd backend
-pip install -e ".[dev]"
+pip install uv && uv pip install --system -e ".[dev]"
 python -m uvicorn app.main:app --reload
 
 # Frontend (Node.js 20+)
@@ -42,19 +51,19 @@ npm run dev
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-capstack/
 ├── backend/                 # FastAPI backend
 │   ├── app/
 │   │   ├── api/            # Route handlers
-│   │   │   ├── health.py   # Health check endpoint
+│   │   │   ├── health.py   # Health check (with DB status)
 │   │   │   ├── items.py    # Example CRUD API
 │   │   │   └── llm.py      # LLM endpoints + WebSocket
 │   │   ├── core/           # Configuration & utilities
+│   │   │   ├── auth.py     # API key auth (opt-in)
 │   │   │   ├── config.py   # Environment settings
-│   │   │   ├── database.py # SQLAlchemy setup
+│   │   │   ├── database.py # SQLAlchemy async setup
 │   │   │   └── llm.py      # LiteLLM integration
 │   │   └── db/
 │   │       └── models.py   # Database models
@@ -62,26 +71,32 @@ capstack/
 │
 ├── frontend/               # Vue 3 frontend
 │   ├── src/
+│   │   ├── __tests__/     # Vitest tests
 │   │   ├── components/     # Reusable UI components
 │   │   ├── composables/    # Vue composables (useApi, useWebSocket)
 │   │   ├── pages/          # Route views
 │   │   └── router/         # Vue Router config
 │   └── ...
 │
-├── .github/workflows/      # CI/CD pipelines
-├── docker-compose.yml      # One-command development
+├── scripts/
+│   ├── init.sh            # Rename project from template
+│   └── smoke-test.sh      # Verify a deployment works
+│
+├── .github/workflows/
+│   ├── ci.yml             # Tests, linting, Docker builds
+│   ├── deploy.yml         # Railway auto-deploy
+│   └── deploy-azure.yml   # Azure Container Apps (manual trigger)
+│
+├── docker-compose.yml      # Local development
+├── railway.json            # Railway multi-service config
 └── .env.example           # Environment template
 ```
 
 ---
 
-## 🤖 LLM Integration
+## LLM Integration
 
-CapStack uses **LiteLLM** for unified access to 100+ LLM providers.
-
-### Configuration
-
-Edit `.env` to set your provider:
+Uses **LiteLLM** for unified access to 100+ LLM providers. Set your provider in `.env`:
 
 ```bash
 # OpenAI
@@ -99,29 +114,38 @@ ANTHROPIC_API_KEY=...
 
 # Local (Ollama)
 LITELLM_MODEL=ollama/llama2
-OLLAMA_BASE_URL=http://localhost:11434
 ```
 
-### Usage in Code
+Usage in code:
 
 ```python
 from app.core.llm import llm_complete, llm_stream
 
-# Simple completion
 response = await llm_complete("Explain quantum computing")
 
-# Streaming (for real-time UI)
 async for chunk in llm_stream("Tell me a story"):
     print(chunk)
 ```
 
 ---
 
-## 🛠️ Common Tasks
+## Authentication
 
-### Add a New API Endpoint
+Simple API key auth is built in but **off by default**. To enable it, set one environment variable:
 
-1. Create a file in `backend/app/api/your_endpoint.py`:
+```bash
+API_KEY=your-secret-key-here
+```
+
+When set, all `/api/*` endpoints require an `X-API-Key` header. Health and root endpoints remain open. To disable, just leave `API_KEY` unset.
+
+---
+
+## Common Tasks
+
+### Add a new API endpoint
+
+1. Create `backend/app/api/your_endpoint.py`:
 
 ```python
 from fastapi import APIRouter
@@ -137,27 +161,28 @@ async def your_endpoint():
 
 ```python
 from app.api import your_endpoint
-app.include_router(your_endpoint.router, prefix="/api")
+app.include_router(your_endpoint.router, prefix="/api", dependencies=[Depends(verify_api_key)])
 ```
 
-### Add a New Database Model
+### Add a new database model
 
-1. Add to `backend/app/db/models.py`:
+Add to `backend/app/db/models.py`:
 
 ```python
 class YourModel(Base):
     __tablename__ = "your_table"
-    
+
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(255))
 ```
 
-2. Restart the backend (tables are auto-created in dev)
+Restart the backend -- tables are auto-created in development.
 
-### Add a New Frontend Page
+> For production, add [Alembic](https://alembic.sqlalchemy.org/) for proper migrations.
+
+### Add a new frontend page
 
 1. Create `frontend/src/pages/YourPage.vue`
-
 2. Add route in `frontend/src/router/index.ts`:
 
 ```typescript
@@ -170,115 +195,117 @@ class YourModel(Base):
 
 ---
 
-## 📋 Common Commands
+## Testing
 
 ```bash
-# Start everything (Docker - recommended)
-docker compose up
-
-# Rebuild after dependency changes
-docker compose up --build
-
-# Stop services
-docker compose down
-
-# View logs
-docker compose logs -f
-
-# Run backend tests
+# Backend
 cd backend && pytest -v
 
-# Lint code
-cd backend && ruff check .
-cd frontend && npm run lint
+# Frontend
+cd frontend && npm test
+
+# Smoke test a running instance
+./scripts/smoke-test.sh                     # localhost:8000
+./scripts/smoke-test.sh https://your-app.example.com  # deployed
 ```
 
 ---
 
-## 🔧 Tech Stack
+## Deployment
+
+### Railway
+
+1. Create a project on [Railway](https://railway.app)
+2. Connect your GitHub repo
+3. Add environment variables from `.env.example`
+4. Add `RAILWAY_TOKEN` to your GitHub repo secrets
+5. Push to `main` -- auto-deploys via `.github/workflows/deploy.yml`
+
+The `railway.json` at the project root defines both services (backend + frontend).
+
+### Azure Container Apps
+
+Deployment is triggered manually from the GitHub Actions tab.
+
+**Prerequisites** (one-time setup):
+
+```bash
+# Create resource group and container registry
+az group create -n myapp-rg -l uksouth
+az acr create -n myappacr -g myapp-rg --sku Basic --admin-enabled
+az containerapp env create -n capstack-env -g myapp-rg -l uksouth
+```
+
+**GitHub secrets required:**
+
+| Secret | Value |
+|--------|-------|
+| `AZURE_CREDENTIALS` | Output of `az ad sp create-for-rbac --sdk-auth` |
+| `ACR_LOGIN_SERVER` | e.g. `myappacr.azurecr.io` |
+| `ACR_USERNAME` | ACR admin username |
+| `ACR_PASSWORD` | ACR admin password |
+| `AZURE_RESOURCE_GROUP` | e.g. `myapp-rg` |
+| `AZURE_LOCATION` | e.g. `uksouth` |
+
+Then go to **Actions > Deploy to Azure > Run workflow**.
+
+### Verify any deployment
+
+```bash
+./scripts/smoke-test.sh https://your-backend-url.example.com
+```
+
+---
+
+## Tech Stack
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Backend** | FastAPI | Modern async Python web framework |
+| **Backend** | FastAPI | Async Python web framework |
 | | SQLAlchemy 2.0 | Async ORM with type hints |
 | | LiteLLM | Unified LLM API (OpenAI, Azure, Anthropic, etc.) |
 | | UV | Fast Python package manager |
 | **Frontend** | Vue 3 | Progressive UI framework |
 | | TypeScript | Type safety |
-| | Vite | Lightning-fast build tool |
+| | Vite | Build tool |
 | | Tailwind CSS | Utility-first styling |
-| | TanStack Query | Data fetching & caching |
-| | Pinia | State management |
+| | TanStack Query | Data fetching and caching |
+| **Testing** | Pytest | Backend tests |
+| | Vitest | Frontend tests |
 | **DevOps** | Docker | Containerization |
 | | GitHub Actions | CI/CD pipelines |
-| | Railway | Deployment platform |
+| | Railway | Deployment (quick/free) |
+| | Azure Container Apps | Deployment (enterprise) |
 
 ---
 
-## 🚢 Deployment
-
-### Railway
-
-1. Create a new project on [Railway](https://railway.app)
-2. Connect your GitHub repo
-3. Add environment variables from `.env.example`
-4. Add `RAILWAY_TOKEN` to GitHub secrets
-5. Push to `main` - auto-deploys!
-
-### Manual Docker
-
-```bash
-# Build production images
-docker compose -f docker-compose.prod.yml build
-
-# Deploy to your server
-docker compose -f docker-compose.prod.yml up -d
-```
-
----
-
-## 🧪 Testing
-
-```bash
-# Backend tests
-cd backend && pytest -v
-
-# With coverage
-pytest --cov=app --cov-report=html
-```
-
----
-
-## 📝 Environment Variables
+## Environment Variables
 
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `APP_ENV` | Environment (development/staging/production) | development |
-| `DATABASE_URL` | Database connection string | sqlite (local) |
+| `DATABASE_URL` | Database connection string | SQLite (local) |
 | `LITELLM_MODEL` | Default LLM model | gpt-4o-mini |
 | `OPENAI_API_KEY` | OpenAI API key | - |
 | `AZURE_API_KEY` | Azure OpenAI key | - |
+| `ANTHROPIC_API_KEY` | Anthropic API key | - |
+| `API_KEY` | API key auth (leave empty to disable) | - |
 | `CORS_ORIGINS` | Allowed CORS origins | localhost |
 
 See `.env.example` for all options.
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Create a feature branch
 2. Make your changes
-3. Run linting (`cd backend && ruff check .`) and tests (`cd backend && pytest`)
-4. Open a PR to `main`
-
----
-
-## 📄 License
-
-MIT - Use freely for your AI innovations!
+3. Run tests: `cd backend && pytest` / `cd frontend && npm test`
+4. Run linting: `cd backend && ruff check .` / `cd frontend && npm run lint`
+5. Open a PR to `main`
 
 ---
 
 <p align="center">
-  Built with ❤️ by the <strong>AI Product Innovation</strong> team
+  Built with care by the <strong>AI Product Innovation</strong> team
 </p>
