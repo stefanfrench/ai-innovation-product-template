@@ -2,7 +2,8 @@
 OpenAI / Azure OpenAI integration.
 
 Supports both Azure OpenAI (default for enterprise) and OpenAI directly.
-Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT for Azure, or OPENAI_API_KEY for OpenAI.
+Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT for Azure,
+or OPENAI_API_KEY for OpenAI.
 
 Usage:
     from app.core.llm import llm_complete, llm_stream
@@ -36,7 +37,8 @@ def _get_client() -> AsyncOpenAI:
 
     raise RuntimeError(
         "No LLM provider configured. "
-        "Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT, or OPENAI_API_KEY in your .env file."
+        "Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT, "
+        "or OPENAI_API_KEY in your .env file."
     )
 
 

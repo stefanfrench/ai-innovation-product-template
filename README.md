@@ -1,8 +1,17 @@
-# AI Product Innovation Template
+<p align="center">
+  <img src="frontend/public/cap-logo.png" alt="Capgemini Invent" width="80" />
+</p>
 
-A full-stack starter for building AI-powered PoCs, fast.
+<h1 align="center">AI Product Innovation Template</h1>
 
-> Built by the AI Product Innovation team at Capgemini Invent
+<p align="center">
+  A full-stack starter for building AI-powered PoCs, fast.<br/>
+  <sub>Built by the <strong>AI Product Innovation</strong> team at Capgemini Invent</sub>
+</p>
+
+<p align="center">
+  <strong>FastAPI</strong> · <strong>Vue 3</strong> · <strong>OpenAI / Azure OpenAI</strong> · <strong>Docker</strong> · <strong>Railway</strong> · <strong>Azure</strong>
+</p>
 
 ---
 
@@ -10,7 +19,7 @@ A full-stack starter for building AI-powered PoCs, fast.
 
 ### 1. Create your project
 
-Use this repo as a GitHub template, then rename it:
+Use this repo as a **GitHub template**, then rename it:
 
 ```bash
 git clone https://github.com/your-org/your-project.git
@@ -46,7 +55,7 @@ docker compose up
 
 Open **http://localhost:5173** (frontend) and **http://localhost:8000/docs** (API docs, dev only).
 
-> **Database:** Local dev uses SQLite (zero setup). For production, set `DATABASE_URL` to a Postgres connection string -- the backend handles both automatically.
+> **Database:** Local dev uses SQLite (zero setup). For production, set `DATABASE_URL` to a Postgres connection string — the backend handles both automatically.
 
 ### Running without Docker
 
@@ -114,7 +123,7 @@ class YourModel(Base):
     name: Mapped[str] = mapped_column(String(255))
 ```
 
-Restart the backend -- tables are auto-created in development. For production, add [Alembic](https://alembic.sqlalchemy.org/) for migrations.
+Restart the backend — tables are auto-created in development. For production, add [Alembic](https://alembic.sqlalchemy.org/) for migrations.
 
 ### Add a frontend page
 
@@ -144,7 +153,7 @@ async for chunk in llm_stream("Tell me a story"):
 
 ## Branding
 
-The frontend uses Capgemini brand colours and the Ubuntu typeface. See **[BRANDING.md](BRANDING.md)** for the colour palette, typography, component classes, and do's/don'ts.
+The frontend uses Capgemini brand colours and the **Ubuntu** typeface. See **[BRANDING.md](BRANDING.md)** for the full colour palette, typography, component classes, and do's/don'ts.
 
 ---
 
@@ -163,16 +172,16 @@ cd frontend && npm test          # Frontend
 ### Railway
 
 1. Create a new project on [railway.com](https://railway.com), deploy from your GitHub repo
-2. Add a **second service** from the Architecture view (same repo) -- one for backend, one for frontend
-3. Set **Root Directory** in each service's Settings: `backend` and `frontend` respectively
-4. Add a **Postgres** plugin from the Architecture view -- Railway provides `DATABASE_URL` automatically. Link it to the backend service.
+2. Add a **second service** from the Architecture view (same repo) — one for backend, one for frontend
+3. Set **Root Directory** in each service's Settings: `backend` and `frontend`
+4. Add a **Postgres** plugin from the Architecture view — Railway provides `DATABASE_URL` automatically. Link it to the backend service
 5. Add variables on the **backend** service: `LLM_MODEL` and your LLM API key (see `.env.example`)
 6. Add one variable on the **frontend** service: `BACKEND_URL` = `http://<backend-service-name>.railway.internal:8000`
 7. Generate a **public domain** for each service under Settings > Networking (target port: `8000` for backend, `80` for frontend)
 
 Railway auto-deploys on every push to `main`.
 
-> **Note:** The backend listens on port 8000 -- do not use Railway's `${{service.PORT}}` variable. If `npm ci` fails, run `npm install` locally in `frontend/` and push the updated lockfile.
+> **Note:** The backend listens on port 8000 — do not use Railway's `${{service.PORT}}` variable. If `npm ci` fails, run `npm install` locally in `frontend/` and push the updated lockfile.
 
 ### Azure Container Apps
 
@@ -222,5 +231,6 @@ railway.json              Railway multi-service config
 ---
 
 <p align="center">
-  Built with care by the <strong>AI Product Innovation</strong> team
+  <img src="frontend/public/cap-logo.png" alt="Capgemini Invent" width="40" /><br/>
+  <sub>Built with care by the <strong>AI Product Innovation</strong> team at Capgemini Invent</sub>
 </p>

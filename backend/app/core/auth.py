@@ -5,7 +5,7 @@ Off by default. Set the API_KEY environment variable to enable.
 When enabled, all /api/* requests must include an X-API-Key header.
 """
 
-from fastapi import Request, HTTPException, Security
+from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader
 
 from app.core.config import get_settings
