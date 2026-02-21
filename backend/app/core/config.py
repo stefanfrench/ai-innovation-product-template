@@ -6,6 +6,7 @@ All config is loaded from environment variables.
 from functools import lru_cache
 from typing import Literal
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -26,6 +27,16 @@ class Settings(BaseSettings):
     # Database
     # SQLite for local dev, PostgreSQL for production
     database_url: str = "sqlite+aiosqlite:///./capstack.db"
+
+    @model_validator(mode="after")
+    def _fix_database_url(self) -> "Settings":
+        """Auto-convert postgres:// and postgresql:// to the async driver variant."""
+        url = self.database_url
+        if url.startswith("postgres://"):
+            self.database_url = url.replace("postgres://", "postgresql+asyncpg://", 1)
+        elif url.startswith("postgresql://"):
+            self.database_url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return self
 
     # LLM - Azure OpenAI (recommended) or OpenAI
     llm_model: str = "gpt-4o-mini"

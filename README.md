@@ -39,10 +39,25 @@ That's it. Open:
 
 ### Running without Docker
 
+First, install [uv](https://docs.astral.sh/uv/) (one-time):
+
+```bash
+# macOS / Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows (PowerShell)
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+Then:
+
 ```bash
 # Backend (Python 3.11+)
 cd backend
-pip install uv && uv pip install --system -e ".[dev]"
+uv venv --python 3.12 .venv
+# macOS/Linux: source .venv/bin/activate
+# Windows:     .venv\Scripts\activate
+uv pip install -e ".[dev]"
 python -m uvicorn app.main:app --reload
 
 # Frontend (Node.js 20+)
