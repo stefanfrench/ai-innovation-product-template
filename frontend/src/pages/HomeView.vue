@@ -13,7 +13,7 @@ import { RouterLink } from 'vue-router'
         AI Product Innovation Template
       </p>
       <p class="text-gray-500 max-w-2xl mx-auto">
-        A full-stack template with FastAPI, Vue 3, TypeScript, and LiteLLM.
+        A full-stack template with FastAPI, Vue 3, TypeScript, and the OpenAI SDK.
         Ready for AI-powered applications with WebSocket streaming.
       </p>
     </div>
@@ -79,7 +79,7 @@ import { RouterLink } from 'vue-router'
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">FastAPI</span>
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">Vue 3</span>
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">TypeScript</span>
-        <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">LiteLLM</span>
+        <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">OpenAI SDK</span>
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">Tailwind CSS</span>
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">SQLAlchemy</span>
         <span class="px-3 py-1 bg-gray-100 rounded-full text-sm text-gray-700">Docker</span>

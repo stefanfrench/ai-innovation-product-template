@@ -102,7 +102,7 @@ const sendMessage = () => {
     </form>
 
     <p class="text-sm text-gray-500 mt-4">
-      This uses WebSocket streaming via LiteLLM. Configure your LLM provider in the backend .env file.
+      This uses WebSocket streaming via Azure OpenAI. Configure your LLM provider in the backend .env file.
     </p>
   </div>
 </template>

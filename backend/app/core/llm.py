@@ -1,59 +1,43 @@
 """
-LiteLLM integration for unified LLM access.
-Supports OpenAI, Azure OpenAI, Anthropic, Ollama (local), and 100+ providers.
+OpenAI / Azure OpenAI integration.
+
+Supports both Azure OpenAI (default for enterprise) and OpenAI directly.
+Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT for Azure, or OPENAI_API_KEY for OpenAI.
 
 Usage:
     from app.core.llm import llm_complete, llm_stream
 
-    # Simple completion
     response = await llm_complete("What is 2+2?")
 
-    # Streaming (for WebSocket/SSE)
     async for chunk in llm_stream("Tell me a story"):
         print(chunk)
-
-    # Override model per-request
-    response = await llm_complete("Hello", model="claude-3-sonnet-20240229")
 """
 
 from collections.abc import AsyncGenerator
-from typing import Any
 
-import litellm
-from litellm import acompletion
+from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from app.core.config import get_settings
 
-settings = get_settings()
 
-# Configure LiteLLM
-litellm.set_verbose = settings.debug
+def _get_client() -> AsyncOpenAI:
+    """Build the appropriate OpenAI client based on config."""
+    settings = get_settings()
 
+    if settings.azure_openai_api_key and settings.azure_openai_endpoint:
+        return AsyncAzureOpenAI(
+            api_key=settings.azure_openai_api_key,
+            azure_endpoint=settings.azure_openai_endpoint,
+            api_version=settings.azure_openai_api_version,
+        )
 
-def _get_completion_kwargs(model: str | None = None) -> dict[str, Any]:
-    """Build kwargs for LiteLLM based on settings."""
-    model = model or settings.litellm_model
-    kwargs: dict[str, Any] = {"model": model}
+    if settings.openai_api_key:
+        return AsyncOpenAI(api_key=settings.openai_api_key)
 
-    # Azure OpenAI
-    if model.startswith("azure/") and settings.azure_api_key:
-        kwargs["api_key"] = settings.azure_api_key
-        kwargs["api_base"] = settings.azure_api_base
-        kwargs["api_version"] = settings.azure_api_version
-
-    # OpenAI
-    elif settings.openai_api_key and not model.startswith(("ollama/", "claude")):
-        kwargs["api_key"] = settings.openai_api_key
-
-    # Anthropic
-    elif model.startswith("claude") and settings.anthropic_api_key:
-        kwargs["api_key"] = settings.anthropic_api_key
-
-    # Ollama (local)
-    elif model.startswith("ollama/"):
-        kwargs["api_base"] = settings.ollama_base_url
-
-    return kwargs
+    raise RuntimeError(
+        "No LLM provider configured. "
+        "Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT, or OPENAI_API_KEY in your .env file."
+    )
 
 
 async def llm_complete(
@@ -63,31 +47,21 @@ async def llm_complete(
     temperature: float = 0.7,
     max_tokens: int = 1000,
 ) -> str:
-    """
-    Get a completion from the configured LLM.
+    """Get a completion from the configured LLM."""
+    settings = get_settings()
+    client = _get_client()
+    model = model or settings.llm_model
 
-    Args:
-        prompt: User message/prompt
-        model: Override the default model (e.g., "gpt-4o", "ollama/llama2")
-        system_prompt: Optional system message
-        temperature: Creativity (0-2)
-        max_tokens: Maximum response length
-
-    Returns:
-        The LLM's response text
-    """
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    kwargs = _get_completion_kwargs(model)
-
-    response = await acompletion(
+    response = await client.chat.completions.create(
+        model=model,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
-        **kwargs,
     )
 
     return response.choices[0].message.content
@@ -100,35 +74,24 @@ async def llm_stream(
     temperature: float = 0.7,
     max_tokens: int = 1000,
 ) -> AsyncGenerator[str, None]:
-    """
-    Stream a completion from the configured LLM.
-    Perfect for WebSocket streaming or Server-Sent Events.
+    """Stream a completion from the configured LLM. Works with WebSockets and SSE."""
+    settings = get_settings()
+    client = _get_client()
+    model = model or settings.llm_model
 
-    Args:
-        prompt: User message/prompt
-        model: Override the default model
-        system_prompt: Optional system message
-        temperature: Creativity (0-2)
-        max_tokens: Maximum response length
-
-    Yields:
-        Text chunks as they arrive
-    """
     messages = []
     if system_prompt:
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    kwargs = _get_completion_kwargs(model)
-
-    response = await acompletion(
+    response = await client.chat.completions.create(
+        model=model,
         messages=messages,
         temperature=temperature,
         max_tokens=max_tokens,
         stream=True,
-        **kwargs,
     )
 
     async for chunk in response:
-        if chunk.choices[0].delta.content:
+        if chunk.choices and chunk.choices[0].delta.content:
             yield chunk.choices[0].delta.content

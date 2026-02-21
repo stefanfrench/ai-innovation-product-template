@@ -11,20 +11,14 @@ from app.core.llm import llm_complete, llm_stream
 
 def _check_llm_configured(settings) -> None:
     """Raise a clear error if no LLM provider API key is set."""
-    model = settings.litellm_model
-    has_key = (
-        settings.openai_api_key
-        or settings.azure_api_key
-        or settings.anthropic_api_key
-        or model.startswith("ollama/")
-    )
+    has_key = settings.azure_openai_api_key or settings.openai_api_key
     if not has_key:
         raise HTTPException(
             status_code=503,
             detail=(
                 "No LLM provider configured. "
-                "Set OPENAI_API_KEY, AZURE_API_KEY, or ANTHROPIC_API_KEY in your .env file. "
-                "For local models, use LITELLM_MODEL=ollama/model-name."
+                "Set AZURE_OPENAI_API_KEY + AZURE_OPENAI_ENDPOINT for Azure OpenAI, "
+                "or OPENAI_API_KEY for OpenAI in your .env file."
             ),
         )
 
@@ -77,7 +71,7 @@ async def complete(request: CompletionRequest) -> CompletionResponse:
 
     return CompletionResponse(
         content=content,
-        model=request.model or settings.litellm_model,
+        model=request.model or settings.llm_model,
     )
 
 

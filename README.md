@@ -22,7 +22,7 @@ cd your-project
 
 ```bash
 cp .env.example .env
-# Edit .env -- add your LLM API key (OpenAI, Azure OpenAI, or Anthropic)
+# Edit .env -- add your Azure OpenAI (or OpenAI) API key
 ```
 
 ### 3. Run
@@ -34,6 +34,8 @@ docker compose up
 That's it. Open:
 - **Frontend**: http://localhost:5173
 - **API Docs**: http://localhost:8000/docs
+
+> **Database:** Local dev uses SQLite (zero setup). For production, add a managed Postgres instance and set `DATABASE_URL` -- the backend handles both automatically.
 
 ### Running without Docker
 
@@ -64,7 +66,7 @@ npm run dev
 │   │   │   ├── auth.py     # API key auth (opt-in)
 │   │   │   ├── config.py   # Environment settings
 │   │   │   ├── database.py # SQLAlchemy async setup
-│   │   │   └── llm.py      # LiteLLM integration
+│   │   │   └── llm.py      # OpenAI / Azure OpenAI client
 │   │   └── db/
 │   │       └── models.py   # Database models
 │   └── tests/              # Pytest tests
@@ -96,24 +98,17 @@ npm run dev
 
 ## LLM Integration
 
-Uses **LiteLLM** for unified access to 100+ LLM providers. Set your provider in `.env`:
+Uses the **OpenAI SDK** directly -- works with both Azure OpenAI (recommended) and OpenAI.
 
 ```bash
-# OpenAI
-LITELLM_MODEL=gpt-4o-mini
+# Azure OpenAI (recommended)
+AZURE_OPENAI_API_KEY=your-key
+AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+LLM_MODEL=gpt-4o-mini          # your deployment name
+
+# Or plain OpenAI
 OPENAI_API_KEY=sk-...
-
-# Azure OpenAI
-LITELLM_MODEL=azure/your-deployment-name
-AZURE_API_KEY=...
-AZURE_API_BASE=https://your-resource.openai.azure.com
-
-# Anthropic
-LITELLM_MODEL=claude-3-sonnet-20240229
-ANTHROPIC_API_KEY=...
-
-# Local (Ollama)
-LITELLM_MODEL=ollama/llama2
+LLM_MODEL=gpt-4o-mini
 ```
 
 Usage in code:
@@ -215,14 +210,17 @@ cd frontend && npm test
 
 ### Railway
 
-1. Create a project on [Railway](https://railway.app) and connect your GitHub repo
-2. Railway will detect `railway.json` and create both services (backend + frontend)
-3. Set environment variables on the **backend** service (from `.env.example`):
-   - `DATABASE_URL`, `LITELLM_MODEL`, your LLM API key, etc.
-4. Set one variable on the **frontend** service:
-   - `BACKEND_URL` = `http://backend.railway.internal:${{backend.PORT}}`
-   - (Use Railway's reference variable syntax to point to the backend's internal URL)
-5. Optionally add `RAILWAY_TOKEN` to GitHub secrets for auto-deploy on push to `main`
+1. Create a new project on [railway.com](https://railway.com), deploy from your GitHub repo
+2. Add a **second service** from the Architecture view (same repo) -- one for backend, one for frontend
+3. Set **Root Directory** in each service's Settings: `backend` and `frontend` respectively. Railway auto-detects the Dockerfiles.
+4. Add a **Postgres** plugin from the Architecture view -- Railway gives you a `DATABASE_URL` automatically. Link it to the backend service.
+5. Add variables on the **backend** service: `LLM_MODEL` and your LLM API key (see `.env.example`)
+6. Add one variable on the **frontend** service: `BACKEND_URL` = `http://<backend-service-name>.railway.internal:8000` (find the name under Settings > Private Networking > DNS)
+7. Generate a **public domain** for each service under Settings > Networking (target port: `8000` for backend, `80` for frontend)
+
+Railway auto-deploys on every push to `main`.
+
+> **Note:** The backend listens on a hardcoded port 8000 -- do not use Railway's `${{service.PORT}}` reference variable. If `npm ci` fails, run `npm install` in `frontend/` locally and push the updated lockfile.
 
 ### Azure Container Apps
 
@@ -264,7 +262,7 @@ Then go to **Actions > Deploy to Azure > Run workflow**.
 |-------|------------|---------|
 | **Backend** | FastAPI | Async Python web framework |
 | | SQLAlchemy 2.0 | Async ORM with type hints |
-| | LiteLLM | Unified LLM API (OpenAI, Azure, Anthropic, etc.) |
+| | OpenAI SDK | Azure OpenAI / OpenAI integration |
 | | UV | Fast Python package manager |
 | **Frontend** | Vue 3 | Progressive UI framework |
 | | TypeScript | Type safety |
@@ -286,10 +284,10 @@ Then go to **Actions > Deploy to Azure > Run workflow**.
 |----------|-------------|---------|
 | `APP_ENV` | Environment (development/staging/production) | development |
 | `DATABASE_URL` | Database connection string | SQLite (local) |
-| `LITELLM_MODEL` | Default LLM model | gpt-4o-mini |
-| `OPENAI_API_KEY` | OpenAI API key | - |
-| `AZURE_API_KEY` | Azure OpenAI key | - |
-| `ANTHROPIC_API_KEY` | Anthropic API key | - |
+| `LLM_MODEL` | Model / deployment name | gpt-4o-mini |
+| `AZURE_OPENAI_API_KEY` | Azure OpenAI key | - |
+| `AZURE_OPENAI_ENDPOINT` | Azure OpenAI endpoint URL | - |
+| `OPENAI_API_KEY` | OpenAI API key (alternative) | - |
 | `API_KEY` | API key auth (leave empty to disable) | - |
 | `CORS_ORIGINS` | Allowed CORS origins | localhost |
 

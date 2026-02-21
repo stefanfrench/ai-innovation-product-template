@@ -27,17 +27,12 @@ class Settings(BaseSettings):
     # SQLite for local dev, PostgreSQL for production
     database_url: str = "sqlite+aiosqlite:///./capstack.db"
 
-    # LiteLLM - supports OpenAI, Azure, Anthropic, local models, and 100+ others
-    # See: https://docs.litellm.ai/docs/providers
-    litellm_model: str = "gpt-4o-mini"  # Default model
+    # LLM - Azure OpenAI (recommended) or OpenAI
+    llm_model: str = "gpt-4o-mini"
+    azure_openai_api_key: str | None = None
+    azure_openai_endpoint: str | None = None
+    azure_openai_api_version: str = "2024-10-21"
     openai_api_key: str | None = None
-    azure_api_key: str | None = None
-    azure_api_base: str | None = None
-    azure_api_version: str = "2024-02-15-preview"
-    anthropic_api_key: str | None = None
-
-    # For local models (Ollama)
-    ollama_base_url: str = "http://localhost:11434"
 
     # Auth (optional - set API_KEY to enable simple key-based auth on /api/* routes)
     api_key: str | None = None
