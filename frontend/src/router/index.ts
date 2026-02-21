@@ -10,9 +10,13 @@ const router = createRouter({
       component: HomeView,
     },
     {
+      path: '/examples',
+      name: 'examples',
+      component: () => import('@/pages/ExamplesView.vue'),
+    },
+    {
       path: '/chat',
       name: 'chat',
-      // Lazy-loaded route
       component: () => import('@/pages/ChatView.vue'),
     },
     {

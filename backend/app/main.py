@@ -30,8 +30,8 @@ app = FastAPI(
     title=settings.app_name,
     description="AI Product Innovation Template API",
     version="0.1.0",
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if not settings.is_production else None,
+    redoc_url="/redoc" if not settings.is_production else None,
     lifespan=lifespan,
 )
 
