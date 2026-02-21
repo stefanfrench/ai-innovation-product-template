@@ -49,14 +49,14 @@ const createItem = () => {
 
 <template>
   <div class="max-w-3xl mx-auto">
-    <h1 class="text-2xl font-bold text-gray-900 mb-6">📦 Items</h1>
+    <h1 class="text-2xl font-bold text-deep-purple mb-6">Items</h1>
 
     <!-- Create Form -->
     <div class="card mb-6">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">Create New Item</h2>
+      <h2 class="text-lg font-medium text-cap-gray-800 mb-4">Create New Item</h2>
       <form @submit.prevent="createItem" class="space-y-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+          <label class="block text-sm font-medium text-cap-gray-600 mb-1">Name</label>
           <input
             v-model="newItemName"
             type="text"
@@ -65,7 +65,7 @@ const createItem = () => {
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <label class="block text-sm font-medium text-cap-gray-600 mb-1">Description</label>
           <input
             v-model="newItemDescription"
             type="text"
@@ -85,27 +85,27 @@ const createItem = () => {
 
     <!-- Items List -->
     <div class="card">
-      <h2 class="text-lg font-medium text-gray-900 mb-4">All Items</h2>
+      <h2 class="text-lg font-medium text-cap-gray-800 mb-4">All Items</h2>
 
-      <div v-if="isLoading" class="text-gray-500">Loading...</div>
-      <div v-else-if="error" class="text-red-500">Error loading items</div>
-      <div v-else-if="!items?.length" class="text-gray-500">No items yet. Create one above!</div>
+      <div v-if="isLoading" class="text-cap-gray-500">Loading...</div>
+      <div v-else-if="error" class="text-tech-red">Error loading items</div>
+      <div v-else-if="!items?.length" class="text-cap-gray-500">No items yet. Create one above!</div>
 
-      <ul v-else class="divide-y divide-gray-200">
+      <ul v-else class="divide-y divide-cap-gray-200">
         <li
           v-for="item in items"
           :key="item.id"
           class="py-4 flex items-center justify-between"
         >
           <div>
-            <p class="font-medium text-gray-900">{{ item.name }}</p>
-            <p v-if="item.description" class="text-sm text-gray-500">
+            <p class="font-medium text-cap-gray-800">{{ item.name }}</p>
+            <p v-if="item.description" class="text-sm text-cap-gray-500">
               {{ item.description }}
             </p>
           </div>
           <button
             @click="deleteMutation.mutate(item.id)"
-            class="text-red-600 hover:text-red-800 text-sm"
+            class="text-tech-red hover:text-tech-red-700 text-sm font-medium"
             :disabled="deleteMutation.isPending.value"
           >
             Delete
@@ -114,7 +114,7 @@ const createItem = () => {
       </ul>
     </div>
 
-    <p class="text-sm text-gray-500 mt-4">
+    <p class="text-sm text-cap-gray-400 mt-4">
       This demonstrates TanStack Query with Vue for data fetching, caching, and mutations.
     </p>
   </div>

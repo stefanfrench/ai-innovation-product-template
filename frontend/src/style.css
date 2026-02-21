@@ -4,7 +4,7 @@
 
 /* Base styles */
 body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+  @apply bg-white text-cap-gray-800 antialiased font-brand;
 }
 
 /* Custom utility classes */
@@ -14,18 +14,22 @@ body {
   }
   
   .btn-primary {
-    @apply bg-primary-600 text-white hover:bg-primary-700;
+    @apply bg-cap-blue text-white hover:bg-cap-blue-600;
   }
-  
+
   .btn-secondary {
-    @apply bg-gray-200 text-gray-800 hover:bg-gray-300;
+    @apply bg-cap-gray-200 text-cap-gray-800 hover:bg-cap-gray-300;
+  }
+
+  .btn-danger {
+    @apply bg-tech-red text-white hover:bg-tech-red-600;
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+    @apply bg-white rounded-xl shadow-sm border border-cap-gray-300 p-6;
   }
   
   .input {
-    @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-shadow;
+    @apply w-full px-4 py-2 border border-cap-gray-300 rounded-lg focus:ring-2 focus:ring-vibrant-blue focus:border-vibrant-blue outline-none transition-shadow;
   }
 }

@@ -49,6 +49,10 @@ frontend/dist/
 # Docker
 .docker/
 
+# Brand guidelines (large files -- see BRANDING.md for dev reference)
+954382613-Capgemini-Brand-Guidelines-v1-0.pdf
+954382613-Capgemini-Brand-Guidelines-v1-0.txt
+
 # Misc
 *.bak
 *.tmp

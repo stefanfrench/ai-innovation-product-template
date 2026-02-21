@@ -89,6 +89,7 @@ npm run dev
 │   ├── deploy.yml         # Railway auto-deploy
 │   └── deploy-azure.yml   # Azure Container Apps (manual trigger)
 │
+├── BRANDING.md             # Colour, typography & component reference
 ├── docker-compose.yml      # Local development
 ├── railway.json            # Railway multi-service config
 └── .env.example           # Environment template
@@ -121,6 +122,14 @@ response = await llm_complete("Explain quantum computing")
 async for chunk in llm_stream("Tell me a story"):
     print(chunk)
 ```
+
+---
+
+## Branding
+
+The frontend uses **Capgemini brand colours** and the **Ubuntu** typeface. All tokens are defined in `frontend/tailwind.config.js` and ready-made component classes (`.btn-primary`, `.card`, `.input`) are in `frontend/src/style.css`.
+
+See **[BRANDING.md](BRANDING.md)** for the full colour palette, typography rules, component examples, and do's/don'ts -- useful as a reference when building new pages or prompting AI tools to generate UI.
 
 ---
 
