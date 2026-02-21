@@ -1,13 +1,18 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
-import CapgeminiLogo from '@/components/CapgeminiLogo.vue'
 </script>
 
 <template>
   <div class="max-w-3xl mx-auto text-center py-20">
     <!-- Logo -->
     <div class="flex justify-center mb-8">
-      <CapgeminiLogo variant="dark" />
+      <div class="flex items-center space-x-3">
+        <img src="/cap-logo.png" alt="Capgemini" class="w-9 h-9" />
+        <div class="leading-tight text-left">
+          <span class="font-bold text-base tracking-tight block text-cap-blue">Capgemini Invent</span>
+          <span class="font-light text-xs tracking-wide block text-cap-gray-500">AI Product Innovation</span>
+        </div>
+      </div>
     </div>
 
     <!-- Hero -->

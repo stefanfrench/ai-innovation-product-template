@@ -16,20 +16,22 @@ NEW_NAME_LOWER=$(echo "$NEW_NAME" | tr '[:upper:]' '[:lower:]')
 
 echo "Renaming project to: $NEW_NAME"
 
-# Files that contain "capstack" or "CapStack" references
 FILES=(
   "backend/pyproject.toml"
+  "backend/app/__init__.py"
+  "backend/app/main.py"
+  "backend/app/core/config.py"
+  "backend/app/api/health.py"
   "frontend/package.json"
   "docker-compose.yml"
   ".env.example"
+  ".github/workflows/ci.yml"
+  ".github/workflows/deploy-azure.yml"
   "README.md"
-  "backend/app/core/config.py"
-  "backend/app/api/health.py"
 )
 
 for file in "${FILES[@]}"; do
   if [ -f "$file" ]; then
-    # Case-insensitive replace of capstack/CapStack
     if [[ "$OSTYPE" == "darwin"* ]]; then
       sed -i '' "s/capstack/$NEW_NAME_LOWER/gI" "$file" 2>/dev/null || \
       sed -i '' -e "s/capstack/$NEW_NAME_LOWER/g" -e "s/CapStack/$NEW_NAME/g" "$file"
